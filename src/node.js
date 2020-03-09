@@ -23,9 +23,6 @@ function createNode(nodeClass, inputArgs, outputs, c) {
         strokeWidth: 2,
         stroke: 'rgba(10)',
         opacity: 0.5,
-        selectable: true,
-        hasControls: false,
-        lockRotation: true,
         rx: 10,
         ry: 10
     });
@@ -63,7 +60,7 @@ function createNode(nodeClass, inputArgs, outputs, c) {
     for (let i = 1; i < outputs.length + 1; i++) {
 
         outputPlugsTotalHeight = i * circleRadius * 4;
-        let currentOutput = inputArgs[i - 1];
+        let currentOutput = outputs[i - 1];
 
         outputPlugs.push(new fabric.Circle({
             radius: circleRadius,
@@ -94,6 +91,9 @@ function createNode(nodeClass, inputArgs, outputs, c) {
     }
 
     let mainGroup = new fabric.Group([outlineRect, nodeText, ...inputPlugs, ...inputLabels, ...outputPlugs, ...outputLabels]);
+    mainGroup.set('selectable', true);
+    mainGroup.set('hasControls', false);
+    mainGroup.set('lockRotation', true);
 
     c.add(mainGroup);
     mainGroup.center();
