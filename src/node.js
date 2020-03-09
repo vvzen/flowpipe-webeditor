@@ -21,8 +21,8 @@ function createNode(nodeClass, inputArgs, outputs, c) {
         width: nodeWidth,
         height: nodeHeight + nodeHeight * 0.25,
         strokeWidth: 2,
-        stroke: 'rgba(10)',
-        opacity: 0.5,
+        stroke: 'rgb(255,127,80)',
+        opacity: 1.0,
         rx: 10,
         ry: 10
     });
@@ -40,7 +40,6 @@ function createNode(nodeClass, inputArgs, outputs, c) {
         inputPlugs.push(new fabric.Circle({
             radius: circleRadius,
             fill: '#ddd',
-            stroke: '#000',
             left: 0 - circleRadius,
             top: 0 + inputPlugsTotalHeight,
         }));
@@ -65,7 +64,6 @@ function createNode(nodeClass, inputArgs, outputs, c) {
         outputPlugs.push(new fabric.Circle({
             radius: circleRadius,
             fill: '#ddd',
-            stroke: '#000',
             left: nodeWidth - circleRadius,
             top: 0 + outputPlugsTotalHeight,
         }));
