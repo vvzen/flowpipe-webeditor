@@ -5,11 +5,11 @@ canvas.backgroundColor = '#333';
 
 // Check the loading of the font
 // TODO: progress bar
-let mainFontName = 'Inconsolata';
-let inconsolataFont = new FontFaceObserver(mainFontName);
+let MAIN_FONT_NAME = 'Inconsolata';
+let inconsolataFont = new FontFaceObserver(MAIN_FONT_NAME);
 inconsolataFont.load()
     .then(() => {
-        console.log(`${mainFontName} font loaded`)
+        console.log(`${MAIN_FONT_NAME} font loaded`)
     }).catch(function(e) {
         console.error(`font loading failed ${e}`);
     });
@@ -37,12 +37,29 @@ canvas.on('mouse:wheel', function(opt) {
 
 });
 
+// canvas.on('mouse:over', (element) => {
+//     // e.target.set('fill', 'red');
+//     console.log('on mouse over');
+//     console.log(element);
+//     if (element){
+//         console.log(element.target);
+//         if (element.target){
+//             console.log(element.target._objects);
+//         }
+//     }
+//     canvas.renderAll();
+//   });
+
 document.addEventListener('keydown', (event) => {
     switch (event.code) {
         case 'KeyN': {
             let inputs = ['radius', 'kernelSize'];
             let outputs = ['image'];
-            createNode('Blur', inputs, outputs, canvas);
+
+            let node = new FlowPipeNode('Blur', {inputs:inputs, outputs:outputs});
+            console.log(node);
+            canvas.add(node);
+            node.center();
             break;
         };
 

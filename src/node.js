@@ -1,98 +1,118 @@
-// TODO: add a prototype for the node
+let FlowPipeNode = fabric.util.createClass(fabric.Group, {
 
-function createNode(nodeClass, inputArgs, outputs, c) {
+    initialize: function(nodeClass, options) {
 
-    let nodeWidth = 256;
-    let nodeHeight = 40;
-    let labelHeight = 16;
-    let circleRadius = 5;
-    let textColor = '#fff';
+        console.log(nodeClass);
+        console.log(options);
 
-    let nodeText = new fabric.Text(nodeClass, {
-        fontSize: labelHeight,
-        fill: textColor,
-        fontFamily: mainFontName,
-        top: labelHeight
-    });
-    nodeText.set('left', (nodeWidth - nodeText.width) / 2.0);
+        options || (options = {});
 
-    let outlineRect = new fabric.Rect({
-        fill: '#222',
-        width: nodeWidth,
-        height: nodeHeight + nodeHeight * 0.25,
-        strokeWidth: 2,
-        stroke: 'rgb(255,127,80)',
-        opacity: 1.0,
-        rx: 10,
-        ry: 10
-    });
+        this.width = 256;
+        this.height = 40;
 
-    let inputPlugs = [];
-    let inputLabels = [];
-    let inputPlugsTotalHeight;
+        let labelHeight = 16;
+        let circleRadius = 5;
+        let textColor = '#fff';
 
-    // Create inputs
-    for (let i = 1; i < inputArgs.length + 1; i++) {
+        let inputArgs = options.inputs;
+        let outputs = options.outputs;
 
-        inputPlugsTotalHeight = i * circleRadius * 4;
-        let currentInputArg = inputArgs[i - 1];
-
-        inputPlugs.push(new fabric.Circle({
-            radius: circleRadius,
-            fill: '#ddd',
-            left: 0 - circleRadius,
-            top: 0 + inputPlugsTotalHeight,
-        }));
-        inputLabels.push(new fabric.Text(currentInputArg, {
-            fontSize: circleRadius * 2,
+        let nodeText = new fabric.Text(nodeClass, {
+            fontSize: labelHeight,
             fill: textColor,
-            left: 0 + circleRadius * 2,
-            top: 0 + inputPlugsTotalHeight,
-            fontFamily: mainFontName
-        }));
-    }
+            fontFamily: MAIN_FONT_NAME,
+            top: labelHeight
+        });
+        nodeText.set('left', (this.width - nodeText.width) / 2.0);
 
-    let outputPlugs = [];
-    let outputLabels = [];
-    let outputPlugsTotalHeight = 0;
+        let outlineRect = new fabric.Rect({
+            fill: '#222',
+            width: this.width,
+            height: this.height + this.height * 0.25,
+            strokeWidth: 2,
+            stroke: 'rgb(255,127,80)',
+            opacity: 1.0,
+            rx: 10,
+            ry: 10
+        });
 
-    for (let i = 1; i < outputs.length + 1; i++) {
+        let inputPlugs = [];
+        let inputLabels = [];
+        let inputPlugsTotalHeight;
 
-        outputPlugsTotalHeight = i * circleRadius * 4;
-        let currentOutput = outputs[i - 1];
+        // Create inputs
+        for (let i = 1; i < inputArgs.length + 1; i++) {
 
-        outputPlugs.push(new fabric.Circle({
-            radius: circleRadius,
-            fill: '#ddd',
-            left: nodeWidth - circleRadius,
-            top: 0 + outputPlugsTotalHeight,
-        }));
+            inputPlugsTotalHeight = i * circleRadius * 4;
+            let currentInputArg = inputArgs[i - 1];
 
-        let currentOutLabel = new fabric.Text(currentOutput, {
-            fontSize: circleRadius * 2,
-            fill: textColor,
-            top: 0 + outputPlugsTotalHeight,
-            fontFamily: mainFontName
-        })
+            inputPlugs.push(new fabric.Circle({
+                radius: circleRadius,
+                fill: '#ddd',
+                left: 0 - circleRadius,
+                top: 0 + inputPlugsTotalHeight,
+            }));
+            inputLabels.push(new fabric.Text(currentInputArg, {
+                fontSize: circleRadius * 2,
+                fill: textColor,
+                left: 0 + circleRadius * 2,
+                top: 0 + inputPlugsTotalHeight,
+                fontFamily: MAIN_FONT_NAME
+            }));
+        }
 
-        currentOutLabel.set('left', nodeWidth - currentOutLabel.width - circleRadius * 2);
+        let outputPlugs = [];
+        let outputLabels = [];
+        let outputPlugsTotalHeight = 0;
 
-        outputLabels.push(currentOutLabel);
-    }
+        for (let i = 1; i < outputs.length + 1; i++) {
 
-    if (inputPlugsTotalHeight >= nodeHeight) {
-        console.log('resizing height because there are too many input plugs');
-        outlineRect.set('height', inputPlugsTotalHeight + (circleRadius * 6));
-    } else if (outputPlugsTotalHeight >= nodeHeight) {
-        console.log('resizing height because there are too many output plugs');
-        outlineRect.set('height', outputPlugsTotalHeight + (circleRadius * 6));
-    }
+            outputPlugsTotalHeight = i * circleRadius * 4;
+            let currentOutput = outputs[i - 1];
 
-    let mainGroup = new fabric.Group([outlineRect, nodeText, ...inputPlugs, ...inputLabels, ...outputPlugs, ...outputLabels]);
-    mainGroup.set('selectable', true);
-    mainGroup.set('hasControls', false);
-    mainGroup.set('lockRotation', true);
+            outputPlugs.push(new fabric.Circle({
+                radius: circleRadius,
+                fill: '#ddd',
+                left: this.width - circleRadius,
+                top: 0 + outputPlugsTotalHeight,
+            }));
 
-    c.add(mainGroup);
-    mainGroup.center();
-}
+            let currentOutLabel = new fabric.Text(currentOutput, {
+                fontSize: circleRadius * 2,
+                fill: textColor,
+                top: 0 + outputPlugsTotalHeight,
+                fontFamily: MAIN_FONT_NAME
+            })
+
+            currentOutLabel.set('left', this.width - currentOutLabel.width - circleRadius * 2);
+
+            outputLabels.push(currentOutLabel);
+        }
+
+        if (inputPlugsTotalHeight >= this.height) {
+            console.log('resizing height because there are too many input plugs');
+            outlineRect.set('height', inputPlugsTotalHeight + (circleRadius * 6));
+        } else if (outputPlugsTotalHeight >= this.height) {
+            console.log('resizing height because there are too many output plugs');
+            outlineRect.set('height', outputPlugsTotalHeight + (circleRadius * 6));
+        }
+
+        let objects = [
+            outlineRect, nodeText,
+            ...inputPlugs, ...inputLabels,
+            ...outputPlugs, ...outputLabels
+        ];
+
+        this.callSuper('initialize', objects, {
+            subTargetCheck: true,
+            selectable: true,
+            hasControls: false,
+            lockRotation: true
+        }, false);
+    },
+
+    _render: function(ctx) {
+        console.log('rendering')
+        this.callSuper('_render', ctx);
+    },
+});
