@@ -1,8 +1,9 @@
+// ------------------------------------
+// Globals
+// ------------------------------------
 let currentIText = null;
+let availableNodes = {};
 
-// ------------------------------------
-// DOM - Get the canvas
-// ------------------------------------
 let canvas = new fabric.Canvas('c');
 canvas.setWidth(window.innerWidth);
 canvas.setHeight(window.innerHeight);
@@ -72,11 +73,13 @@ canvas.on('mouse:wheel', function(opt) {
 function addParsedNodes(json) {
 
     // Register the nodes contained in the json
-    json.forEach(node => {
-        console.log(`registering ${node.name}`);
+    Object.keys(json).forEach(node => {
+        console.log(`registering ${node}`);
+        availableNodes[node] = json[node];
     });
-
-    let form = document.getElementById('create-node');
+    // Update the UI
+    let nodesAvailableEl = document.getElementById("current-avail-nodes");
+    nodesAvailableEl.textContent = Object.keys(availableNodes).join(", ");
 
     document.addEventListener('keydown', (event) => {
         console.log(event.code);
@@ -88,7 +91,10 @@ function addParsedNodes(json) {
                 event.preventDefault();
 
                 currentIText = new fabric.IText('a', {
-                    backgroundColor: '#fff'
+                    backgroundColor: '#fff',
+                    fontSize: 16,
+                    fontFamily: MAIN_FONT_NAME,
+                    opacity: 0.9
                 });
                 canvas.add(currentIText);
                 currentIText.center();
@@ -99,9 +105,26 @@ function addParsedNodes(json) {
             }
 
             case 'Enter': {
+
                 if (currentIText){
+
                     console.log('exiting edit');
+                    let enteredName = currentIText.text;
+                    console.log(`node name: ${enteredName}`)
+
+                    let matchingNode = availableNodes[enteredName];
                     currentIText.exitEditing();
+
+                    // Add the node
+                    if (matchingNode){
+                        let newNode = new FlowPipeNode(enteredName, {
+                            inputs: matchingNode.inputs,
+                            outputs: matchingNode.outputs,
+                        });
+                        canvas.add(newNode);
+                        newNode.center();
+                    }
+                    canvas.remove(currentIText);
                     currentIText = null;
                 }
                 break;

@@ -1,6 +1,5 @@
-[
-    {
-        "name": "ColorSpaceConvert",
+{
+    "ColorSpaceConvert" : {
         "inputs": [
             "inputColorspace",
             "inputPath",
@@ -10,8 +9,7 @@
             "outputPath"
         ]
     },
-    {
-        "name": "BakeLUT",
+    "BakeLUT": {
         "inputs": [
             "inputColorspace",
             "inputPath",
@@ -22,4 +20,4 @@
             "outputPath"
         ]
     }
-]
+}
