@@ -1,0 +1,23 @@
+{
+    "ColorSpaceConvert" : {
+        "inputs": [
+            "inputColorspace",
+            "inputPath",
+            "outputColorspace"
+        ],
+        "outputs": [
+            "outputPath"
+        ]
+    },
+    "BakeLUT": {
+        "inputs": [
+            "inputColorspace",
+            "inputPath",
+            "cubeSize",
+            "outputColorspace"
+        ],
+        "outputs": [
+            "outputPath"
+        ]
+    }
+}

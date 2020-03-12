@@ -1,19 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FabricJS - 1</title>
 </head>
+
 <body>
     <div id="container">
-        <div>Press N to create a new node</div>
-        <div>Press CMD(CTRL) + Backspace to delete a node</div>
+        <div>Press Tab, type the name of a node and the press enter to create it</div>
+        <div>Currently available nodes: <span id="current-avail-nodes"></span></div>
+        <div>Press Backspace to delete a node</div>
+
         <canvas id="c"></canvas>
     </div>
     <style>
         @import url('https://fonts.googleapis.com/css?family=Inconsolata&display=swap');
     </style>
+
 
     <script src="src/libs/fontfaceobserver.standalone.js"></script>
     <script src="src/libs/fabric.min.js"></script>
@@ -21,4 +26,5 @@
     <script src="src/editor.js"></script>
 
 </body>
+
 </html>

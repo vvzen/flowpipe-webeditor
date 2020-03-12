@@ -23,7 +23,14 @@ let FlowPipeNode = fabric.util.createClass(fabric.Group, {
             fontFamily: MAIN_FONT_NAME,
             top: labelHeight
         });
-        nodeText.set('left', (this.width - nodeText.width) / 2.0);
+
+        // Resize the node horizontally if the node label is very long
+        console.log(`label width: ${nodeText.width}, node width: ${this.width}`)
+        if (this.width < nodeText.width * 2.5) {
+            this.width = nodeText.width * 2.5;
+        }
+
+        nodeText.set('left', (this.width - nodeText.width) * 0.5);
 
         let outlineRect = new fabric.Rect({
             fill: '#222',
@@ -61,6 +68,7 @@ let FlowPipeNode = fabric.util.createClass(fabric.Group, {
             }));
         }
 
+        // Create outputs
         let outputPlugs = [];
         let outputLabels = [];
         let outputPlugsTotalHeight = 0;
@@ -89,6 +97,7 @@ let FlowPipeNode = fabric.util.createClass(fabric.Group, {
             outputLabels.push(currentOutLabel);
         }
 
+        // Resize node horizontally or vertically if needed
         if (inputPlugsTotalHeight >= this.height) {
             console.log('resizing height because there are too many input plugs');
             outlineRect.set('height', inputPlugsTotalHeight + (circleRadius * 6));
