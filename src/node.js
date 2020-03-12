@@ -106,6 +106,91 @@ let FlowPipeNode = fabric.util.createClass(fabric.Group, {
             outlineRect.set('height', outputPlugsTotalHeight + (circleRadius * 6));
         }
 
+        // Add callbacks for connecting the plugs
+        outputPlugs.forEach(plug => {
+
+            plug.on('mouseover', () => {
+                canvas.hoverCursor = 'pointer';
+            });
+
+            plug.on('mouseout', () => {
+                canvas.hoverCursor = 'move';
+            });
+
+            plug.on('mousedown', event => {
+                console.log('mouse down')
+                console.log(event.target);
+                this.lockMovementX = true;
+                this.lockMovementY = true;
+                canvas.hoverCursor = 'pointer';
+
+            });
+
+            plug.on('mouseup', event => {
+                console.log('mouse up')
+                console.log(event.target);
+                this.lockMovementX = false;
+                this.lockMovementY = false;
+                canvas.hoverCursor = 'move';
+
+                console.log(`target left: ${event.target.left}`)
+                console.log(`group  left: ${plug.group.left}`)
+                console.log(`plug   left: ${plug.left}`)
+                // console.log(`plug coords  : ${plug.getCoords()}`)
+
+                let startPoint = {
+                    x: plug.group.left + plug.left + (plug.group.width / 2) + circleRadius / 2,
+                    y: plug.group.top + plug.top + (plug.group.height / 2) + circleRadius / 2
+                };
+
+                let endPoint = canvas.getPointer(event);
+
+                console.log(plug);
+
+                currentLine = new fabric.Line([startPoint.x, startPoint.y, endPoint.x, endPoint.y], {
+                    fill: '#f00',
+                    stroke: 'red',
+                    strokeWidth: 4,
+                    selectable: false,
+                    evented: false
+                })
+                canvas.add(currentLine);
+
+            });
+        });
+
+        inputPlugs.forEach(plug => {
+
+            plug.on('mouseover', () => {
+                if (!currentLine) {
+                    return;
+                }
+                canPlugLine = true;
+
+                currentInputPlugCoords = {
+                    x: plug.group.left + plug.left + plug.group.width / 2 + circleRadius / 2,
+                    y: plug.group.top + plug.top + plug.group.height / 2 + circleRadius / 2
+                };
+
+                console.log('mouse over input plug');
+
+                currentLine.set({
+                    x2: currentInputPlugCoords.x,
+                    y2: currentInputPlugCoords.y
+                });
+                canvas.renderAll();
+            });
+
+            plug.on('mouseout', () => {
+                if (!currentLine) {
+                    return;
+                }
+                canPlugLine = false;
+
+                console.log('mouse out input plug');
+            });
+        });
+
         let objects = [
             outlineRect, nodeText,
             ...inputPlugs, ...inputLabels,

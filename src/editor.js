@@ -1,7 +1,14 @@
 // ------------------------------------
 // Globals
 // ------------------------------------
+
+// TODO: Make a UI Controller Object that handles
+// these different states in which we can be
 let currentIText = null;
+let currentLine = null;
+let currentInputPlugCoords = null;
+let canPlugLine = false;
+
 let availableNodes = {};
 
 let canvas = new fabric.Canvas('c');
@@ -57,6 +64,22 @@ canvas.on('mouse:wheel', function(opt) {
 
 });
 
+canvas.on('mouse:move', function(event) {
+    if (!currentLine){
+        return;
+    }
+
+    // If the mouse is over a object
+    // then the object itself will handle it
+    if (event.target){
+        return;
+    }
+
+    let mousePos = canvas.getPointer(event);
+    currentLine.set({x2: mousePos.x, y2: mousePos.y});
+    canvas.renderAll();
+  });
+
 // canvas.on('mouse:over', (element) => {
 //     // e.target.set('fill', 'red');
 //     console.log('on mouse over');
@@ -106,6 +129,7 @@ function addParsedNodes(json) {
 
             case 'Enter': {
 
+                // If the user was typing a node
                 if (currentIText){
 
                     console.log('exiting edit');
@@ -125,8 +149,33 @@ function addParsedNodes(json) {
                         newNode.center();
                     }
                     canvas.remove(currentIText);
+                    canvas.renderAll();
                     currentIText = null;
                 }
+
+                // If the user is plugging an output
+                else if (currentLine){
+
+                    // Plug the line
+                    if (canPlugLine && currentInputPlugCoords){
+                        currentLine.set({
+                            x2: currentInputPlugCoords.x,
+                            y2: currentInputPlugCoords.y
+                        });
+                        canvas.renderAll();
+                        currentLine = null;
+                        canPlugLine = false;
+                    }
+                    // Delete the line
+                    else {
+                        canvas.remove(currentLine);
+                        canvas.renderAll();
+                        currentLine = null;
+                    }
+
+                }
+
+
                 break;
             }
 
