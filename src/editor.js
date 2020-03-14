@@ -89,45 +89,59 @@ canvas.on('mouse:move', function(event) {
 canvas.on('object:moving', function(e) {
     let node = e.target;
 
-    if (node.inputPlugs.length == 0 && node.outputPlugs.length == 0) {
-        return;
+    let nodesToVisit = [];
+
+    // If the user has selected multiple nodes
+    if (Object.getPrototypeOf(e.target).type === 'activeSelection') {
+        nodesToVisit.push(...node._objects);
+    }
+    // Or only one
+    else {
+        nodesToVisit.push(e.target);
     }
 
-    // Outputs
-    for (let i = 0; i < node.outputPlugs.length; i++) {
-        let plug = node.outputPlugs[i];
+    for (let n = 0; n < nodesToVisit.length; n++) {
 
-        for (let j = 0; j < plug.lines.length; j++) {
-            let line = plug.lines[j];
-            let newCoords = {
-                x: plug.group.left + plug.left + plug.group.width / 2 + plug.parent.circleRadius / 2,
-                y: plug.group.top + plug.top + plug.group.height / 2 + plug.parent.circleRadius / 2
-            }
+        let node = nodesToVisit[n];
 
-            line.set({
-                x1: newCoords.x,
-                y1: newCoords.y
-            });
+        if (node.inputPlugs.length == 0 && node.outputPlugs.length == 0) {
+            continue;
         }
-    }
 
-    // Inputs
-    console.log(`looping over inputs of ${node}`);
-    for (let i = 0; i < node.inputPlugs.length; i++) {
-        let plug = node.inputPlugs[i];
+        // Outputs
+        for (let i = 0; i < node.outputPlugs.length; i++) {
+            let plug = node.outputPlugs[i];
 
-        for (let j = 0; j < plug.lines.length; j++) {
-            let line = plug.lines[j];
-            console.log(line);
+            for (let j = 0; j < plug.lines.length; j++) {
+                let line = plug.lines[j];
+                let newCoords = {
+                    x: plug.group.left + plug.left + plug.group.width / 2 + plug.parent.circleRadius / 2,
+                    y: plug.group.top + plug.top + plug.group.height / 2 + plug.parent.circleRadius / 2
+                }
 
-            let newCoords = {
-                x: plug.group.left + plug.left + plug.group.width / 2 + plug.parent.circleRadius / 2,
-                y: plug.group.top + plug.top + plug.group.height / 2 + plug.parent.circleRadius / 2
+                line.set({
+                    x1: newCoords.x,
+                    y1: newCoords.y
+                });
             }
-            line.set({
-                x2: newCoords.x,
-                y2: newCoords.y
-            });
+        }
+
+        // Inputs
+        for (let i = 0; i < node.inputPlugs.length; i++) {
+            let plug = node.inputPlugs[i];
+
+            for (let j = 0; j < plug.lines.length; j++) {
+                let line = plug.lines[j];
+
+                let newCoords = {
+                    x: plug.group.left + plug.left + plug.group.width / 2 + plug.parent.circleRadius / 2,
+                    y: plug.group.top + plug.top + plug.group.height / 2 + plug.parent.circleRadius / 2
+                }
+                line.set({
+                    x2: newCoords.x,
+                    y2: newCoords.y
+                });
+            }
         }
     }
 });
@@ -184,7 +198,6 @@ function addParsedNodes(json) {
                             inputs: matchingNode.inputs,
                             outputs: matchingNode.outputs,
                         });
-                        FlowPipe.nodeGraph.addNode(newNode);
                         newNode.center();
                     }
                     canvas.remove(FlowPipe.currentIText);
@@ -253,18 +266,15 @@ function addParsedNodes(json) {
                         plug.lines.forEach(line => {
                             canvas.remove(line);
                         });
-                        canvas.remove(plug);
                     });
 
                     element.outputPlugs.forEach(plug => {
                         plug.lines.forEach(line => {
                             canvas.remove(line);
                         });
-                        canvas.remove(plug);
                     });
-                    canvas.remove(element);
+                    FlowPipe.nodeGraph.removeNode(element);
 
-                    // FlowPipe.nodeGraph.removeNode(element);
                 });
                 canvas.renderAll();
                 break;

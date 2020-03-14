@@ -134,8 +134,10 @@ FlowPipe.Node = fabric.util.createClass(fabric.Group, {
             subTargetCheck: true,
             selectable: true,
             hasControls: false,
-            hasBorders: true,
-            lockRotation: true
+            hasBorders: false,
+            lockRotation: true,
+            lockScalingX: true,
+            lockScalingY: true
         }, false);
     },
 

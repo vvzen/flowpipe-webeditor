@@ -19,7 +19,6 @@ function nodeGraph() {
             throw new Error("Cannot unregister node: a node must have an id!");
         }
         canvas.remove(node);
-        delete nodes[node.id];
     }
 
     const getNodeElement = (node, elementId) => {
