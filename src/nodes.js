@@ -51,7 +51,7 @@ FlowPipe.Node = fabric.util.createClass(fabric.Group, {
             id: this.childrenIdCount++
         });
 
-        let inputPlugs = [];
+        this.inputPlugs = [];
         let inputLabels = [];
         let inputPlugsTotalHeight;
 
@@ -68,7 +68,7 @@ FlowPipe.Node = fabric.util.createClass(fabric.Group, {
                 top: 0 + inputPlugsTotalHeight
             });
             console.log(`added ${inputPlug}`);
-            inputPlugs.push(inputPlug);
+            this.inputPlugs.push(inputPlug);
 
             let inputPlugText = new fabric.Text(currentInputArg, {
                 fontSize: this.circleRadius * 2,
@@ -83,7 +83,7 @@ FlowPipe.Node = fabric.util.createClass(fabric.Group, {
         }
 
         // Create outputs
-        let outputPlugs = [];
+        this.outputPlugs = [];
         let outputLabels = [];
         let outputPlugsTotalHeight = 0;
 
@@ -98,7 +98,7 @@ FlowPipe.Node = fabric.util.createClass(fabric.Group, {
                 left: this.width - this.circleRadius,
                 top: 0 + outputPlugsTotalHeight,
             });
-            outputPlugs.push(outputPlug);
+            this.outputPlugs.push(outputPlug);
 
             let currentOutLabel = new fabric.Text(currentOutput, {
                 fontSize: this.circleRadius * 2,
@@ -122,35 +122,24 @@ FlowPipe.Node = fabric.util.createClass(fabric.Group, {
             outlineRect.set('height', outputPlugsTotalHeight + (this.circleRadius * 6));
         }
 
-        // Add callbacks for connecting the plugs
-        // outputPlugs.forEach(plug => {
-
-
-        // });
-
-        // inputPlugs.forEach(plug => {
-
-
-        // });
-
         let objects = [
             outlineRect, nodeText,
-            ...inputPlugs, ...inputLabels,
-            ...outputPlugs, ...outputLabels
+            ...this.inputPlugs, ...inputLabels,
+            ...this.outputPlugs, ...outputLabels
         ];
 
-        FlowPipe.nodeGraph.registerNode(this);
+        FlowPipe.nodeGraph.addNode(this);
 
         this.callSuper('initialize', objects, {
             subTargetCheck: true,
             selectable: true,
             hasControls: false,
+            hasBorders: true,
             lockRotation: true
         }, false);
     },
 
     _render: function(ctx) {
-        console.log('rendering')
         this.callSuper('_render', ctx);
     }
 });
@@ -166,6 +155,7 @@ FlowPipe.NodePlug = fabric.util.createClass(fabric.Circle, {
         }
 
         this.parent = parent;
+        this.lines = [];
 
         // Add different events depending if it's an input plug or an output plug
         if (isOutput) {
@@ -193,17 +183,22 @@ FlowPipe.NodePlug = fabric.util.createClass(fabric.Circle, {
 
                 console.log(FlowPipe.currentLine);
 
+                let points = [startPoint.x, startPoint.y, endPoint.x, endPoint.y];
+
                 console.log("creating Line");
-                FlowPipe.currentLine = new fabric.Line([startPoint.x, startPoint.y, endPoint.x, endPoint.y], {
-                    fill: '#f00',
-                    stroke: 'red',
+                FlowPipe.currentLine = new FlowPipe.NodeConnection(points, {
+                    stroke: '#ccc',
                     strokeWidth: 4,
                     selectable: false,
                     evented: false
-                });
+                })
+
+                // TODO: check if, in terms of performance
+                // it's better to use an ID instead of a reference
+                FlowPipe.currentLine.set({startPlug: this});
+                this.lines.push(FlowPipe.currentLine);
 
                 canvas.add(FlowPipe.currentLine);
-
             });
 
             this.on('mouseup', event => {
@@ -212,32 +207,6 @@ FlowPipe.NodePlug = fabric.util.createClass(fabric.Circle, {
                 this.lockMovementX = false;
                 this.lockMovementY = false;
                 canvas.hoverCursor = 'move';
-
-                // console.log(`target left: ${event.target.left}`)
-                // console.log(`group  left: ${this.group.left}`)
-                // console.log(`plug   left: ${this.left}`)
-                // console.log(`plug coords  : ${plug.getCoords()}`)
-
-                // let startPoint = {
-                //     x: this.group.left + this.left + (this.group.width / 2) + this.parent.circleRadius / 2,
-                //     y: this.group.top + this.top + (this.group.height / 2) + this.parent.circleRadius / 2
-                // };
-
-                // let endPoint = canvas.getPointer(event);
-
-                // FlowPipe.currentLine = new fabric.Line([startPoint.x, startPoint.y, endPoint.x, endPoint.y], {
-                //     fill: '#f00',
-                //     stroke: 'red',
-                //     strokeWidth: 4,
-                //     selectable: false,
-                //     evented: false
-                // });
-
-                // console.log("creating new line");
-
-                // console.log(`plug.id: ${this.id}`);
-                // canvas.add(FlowPipe.currentLine);
-
             });
 
         } else {
@@ -257,6 +226,8 @@ FlowPipe.NodePlug = fabric.util.createClass(fabric.Circle, {
                     x2: FlowPipe.currentInputPlugCoords.x,
                     y2: FlowPipe.currentInputPlugCoords.y
                 });
+                FlowPipe.currentLine.set({endPlug: this})
+
                 canvas.renderAll();
             });
 
@@ -264,7 +235,9 @@ FlowPipe.NodePlug = fabric.util.createClass(fabric.Circle, {
                 if (!FlowPipe.currentLine) {
                     return;
                 }
+
                 FlowPipe.canPlugLine = false;
+                FlowPipe.currentInputPlugCoords = null;
 
                 console.log('mouse out input plug');
             });
@@ -272,13 +245,24 @@ FlowPipe.NodePlug = fabric.util.createClass(fabric.Circle, {
 
         this.id = parent.childrenIdCount++;
         this.path = `/nodegraph/${parent.id}/${this.id}`;
-        this.lines = [];
 
         this.callSuper('initialize', options, false);
     },
 
     _render: function(ctx) {
-        console.log('rendering')
+        this.callSuper('_render', ctx);
+    }
+});
+
+FlowPipe.NodeConnection = fabric.util.createClass(fabric.Line, {
+
+    initialize: function(points, options) {
+        this.startPlug = null;
+        this.endPlug = null;
+        this.callSuper('initialize', points, options, false);
+    },
+
+    _render: function(ctx) {
         this.callSuper('_render', ctx);
     }
 });

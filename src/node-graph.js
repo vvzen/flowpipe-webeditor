@@ -6,15 +6,24 @@ function nodeGraph() {
     let currentId = 0;
     const nodes = {};
 
-    const registerNode = (node) => {
-        if (node.id == undefined){
-            throw new Error("A node must have an id!");
+    const addNode = (node) => {
+        if (node.id == undefined) {
+            throw new Error("Cannot register node: a node must have an id!");
         }
         nodes[node.id] = node;
+        canvas.add(node);
+    }
+
+    const removeNode = (node) => {
+        if (node.id == undefined) {
+            throw new Error("Cannot unregister node: a node must have an id!");
+        }
+        canvas.remove(node);
+        delete nodes[node.id];
     }
 
     const getNodeElement = (node, elementId) => {
-        if (node.id == undefined){
+        if (node.id == undefined) {
             throw new Error("A node must have an id!");
         }
         return nodes[node.id]._objects[elementId];
@@ -26,7 +35,8 @@ function nodeGraph() {
 
     return {
         nodes,
-        registerNode,
+        addNode,
+        removeNode,
         getNodeElement,
         generateId
     }

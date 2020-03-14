@@ -8,8 +8,8 @@ const FlowPipe = {};
 // these different states in which we can be
 FlowPipe.currentIText = null;
 FlowPipe.currentLine = null;
-let currentLine = null;
 FlowPipe.currentInputPlugCoords = null;
+
 FlowPipe.canPlugLine = false;
 
 FlowPipe.availableNodes = {};
@@ -88,14 +88,48 @@ canvas.on('mouse:move', function(event) {
 
 canvas.on('object:moving', function(e) {
     let node = e.target;
-    // console.log(node);
-    // console.log('object moved');
-    // console.log(`node id: ${node.id}`);
 
-    // console.log(`input   of node: ${node._inputId}`);
-    // console.log(`outputs of node: ${node._outputIds}`);
+    if (node.inputPlugs.length == 0 && node.outputPlugs.length == 0) {
+        return;
+    }
 
-    // let plug = nodeMap[currentLine._inputId];
+    // Outputs
+    for (let i = 0; i < node.outputPlugs.length; i++) {
+        let plug = node.outputPlugs[i];
+
+        for (let j = 0; j < plug.lines.length; j++) {
+            let line = plug.lines[j];
+            let newCoords = {
+                x: plug.group.left + plug.left + plug.group.width / 2 + plug.parent.circleRadius / 2,
+                y: plug.group.top + plug.top + plug.group.height / 2 + plug.parent.circleRadius / 2
+            }
+
+            line.set({
+                x1: newCoords.x,
+                y1: newCoords.y
+            });
+        }
+    }
+
+    // Inputs
+    console.log(`looping over inputs of ${node}`);
+    for (let i = 0; i < node.inputPlugs.length; i++) {
+        let plug = node.inputPlugs[i];
+
+        for (let j = 0; j < plug.lines.length; j++) {
+            let line = plug.lines[j];
+            console.log(line);
+
+            let newCoords = {
+                x: plug.group.left + plug.left + plug.group.width / 2 + plug.parent.circleRadius / 2,
+                y: plug.group.top + plug.top + plug.group.height / 2 + plug.parent.circleRadius / 2
+            }
+            line.set({
+                x2: newCoords.x,
+                y2: newCoords.y
+            });
+        }
+    }
 });
 
 function addParsedNodes(json) {
@@ -150,7 +184,7 @@ function addParsedNodes(json) {
                             inputs: matchingNode.inputs,
                             outputs: matchingNode.outputs,
                         });
-                        canvas.add(newNode);
+                        FlowPipe.nodeGraph.addNode(newNode);
                         newNode.center();
                     }
                     canvas.remove(FlowPipe.currentIText);
@@ -163,10 +197,8 @@ function addParsedNodes(json) {
 
                     // Plug the line
                     if (FlowPipe.canPlugLine && FlowPipe.currentInputPlugCoords) {
-                        FlowPipe.currentLine.set({
-                            x2: FlowPipe.currentInputPlugCoords.x,
-                            y2: FlowPipe.currentInputPlugCoords.y
-                        });
+
+                        FlowPipe.currentLine.endPlug.lines.push(FlowPipe.currentLine);
                         canvas.renderAll();
 
                         FlowPipe.currentLine = null;
@@ -214,8 +246,27 @@ function addParsedNodes(json) {
                 }
 
                 canvas.getActiveObjects().forEach(element => {
+
+                    console.log(`delete ${element}`);
+
+                    element.inputPlugs.forEach(plug => {
+                        plug.lines.forEach(line => {
+                            canvas.remove(line);
+                        });
+                        canvas.remove(plug);
+                    });
+
+                    element.outputPlugs.forEach(plug => {
+                        plug.lines.forEach(line => {
+                            canvas.remove(line);
+                        });
+                        canvas.remove(plug);
+                    });
                     canvas.remove(element);
+
+                    // FlowPipe.nodeGraph.removeNode(element);
                 });
+                canvas.renderAll();
                 break;
             };
         }
