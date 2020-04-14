@@ -28,6 +28,5 @@ If you have python installed, you can do
 2. Refactor code
 3. Decide the next milestone?
 
-## Nice to have
-
+## Nice to have
 1. Autocompletion when creating a node
