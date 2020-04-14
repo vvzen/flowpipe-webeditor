@@ -1,8 +1,18 @@
 // ------------------------------------
 // Globals
 // ------------------------------------
-let currentIText = null;
-let availableNodes = {};
+// Namespace
+const FlowPipe = {};
+
+// TODO: Make a UI Controller Object that handles
+// these different states in which we can be
+FlowPipe.currentIText = null;
+FlowPipe.currentLine = null;
+FlowPipe.currentInputPlugCoords = null;
+
+FlowPipe.canPlugLine = false;
+
+FlowPipe.availableNodes = {};
 
 let canvas = new fabric.Canvas('c');
 canvas.setWidth(window.innerWidth);
@@ -26,19 +36,19 @@ fetch("example_nodes.json")
 
 // Check the loading of the font
 // TODO: progress bar
-let MAIN_FONT_NAME = 'Inconsolata';
-let inconsolataFont = new FontFaceObserver(MAIN_FONT_NAME);
-inconsolataFont.load()
+FlowPipe.MAIN_FONT_NAME = 'Inconsolata';
+FlowPipe.inconsolataFont = new FontFaceObserver(FlowPipe.MAIN_FONT_NAME);
+FlowPipe.inconsolataFont.load()
     .then(() => {
-        console.log(`${MAIN_FONT_NAME} font loaded`)
-    }).catch(function(e) {
+        console.log(`${FlowPipe.MAIN_FONT_NAME} font loaded`)
+    }).catch(function (e) {
         console.error(`font loading failed ${e}`);
     });
 
 // ------------------------------------
 // Event Callbacks
 // ------------------------------------
-canvas.on('mouse:wheel', function(opt) {
+canvas.on('mouse:wheel', function (opt) {
     var delta = opt.e.deltaY;
     var zoom = canvas.getZoom();
 
@@ -57,29 +67,95 @@ canvas.on('mouse:wheel', function(opt) {
 
 });
 
-// canvas.on('mouse:over', (element) => {
-//     // e.target.set('fill', 'red');
-//     console.log('on mouse over');
-//     console.log(element);
-//     if (element){
-//         console.log(element.target);
-//         if (element.target){
-//             console.log(element.target._objects);
-//         }
-//     }
-//     canvas.renderAll();
-//   });
+canvas.on('mouse:move', function (event) {
+    if (!FlowPipe.currentLine) {
+        return;
+    }
+
+    // If the mouse is over a object
+    // then the object itself will handle it
+    if (event.target) {
+        return;
+    }
+
+    let mousePos = canvas.getPointer(event);
+    FlowPipe.currentLine.set({
+        x2: mousePos.x,
+        y2: mousePos.y
+    });
+    canvas.renderAll();
+});
+
+canvas.on('object:moving', function (e) {
+    let node = e.target;
+
+    let nodesToVisit = [];
+
+    // If the user has selected multiple nodes
+    if (Object.getPrototypeOf(e.target).type === 'activeSelection') {
+        nodesToVisit.push(...node._objects);
+    }
+    // Or only one
+    else {
+        nodesToVisit.push(e.target);
+    }
+
+    for (let n = 0; n < nodesToVisit.length; n++) {
+
+        let node = nodesToVisit[n];
+
+        if (node.inputPlugs.length == 0 && node.outputPlugs.length == 0) {
+            continue;
+        }
+
+        // Outputs
+        for (let i = 0; i < node.outputPlugs.length; i++) {
+            let plug = node.outputPlugs[i];
+
+            for (let j = 0; j < plug.lines.length; j++) {
+                let line = plug.lines[j];
+                let newCoords = {
+                    x: plug.group.left + plug.left + plug.group.width / 2 + plug.parent.circleRadius / 2,
+                    y: plug.group.top + plug.top + plug.group.height / 2 + plug.parent.circleRadius / 2
+                }
+
+                line.set({
+                    x1: newCoords.x,
+                    y1: newCoords.y
+                });
+            }
+        }
+
+        // Inputs
+        for (let i = 0; i < node.inputPlugs.length; i++) {
+            let plug = node.inputPlugs[i];
+
+            for (let j = 0; j < plug.lines.length; j++) {
+                let line = plug.lines[j];
+
+                let newCoords = {
+                    x: plug.group.left + plug.left + plug.group.width / 2 + plug.parent.circleRadius / 2,
+                    y: plug.group.top + plug.top + plug.group.height / 2 + plug.parent.circleRadius / 2
+                }
+                line.set({
+                    x2: newCoords.x,
+                    y2: newCoords.y
+                });
+            }
+        }
+    }
+});
 
 function addParsedNodes(json) {
 
     // Register the nodes contained in the json
     Object.keys(json).forEach(node => {
         console.log(`registering ${node}`);
-        availableNodes[node] = json[node];
+        FlowPipe.availableNodes[node] = json[node];
     });
     // Update the UI
-    let nodesAvailableEl = document.getElementById("current-avail-nodes");
-    nodesAvailableEl.textContent = Object.keys(availableNodes).join(", ");
+    let availableNodesDiv = document.getElementById('current-avail-nodes');
+    availableNodesDiv.innerHTML = `<em>${Object.keys(FlowPipe.availableNodes).join(', ')}</em>`;
 
     document.addEventListener('keydown', (event) => {
         console.log(event.code);
@@ -90,43 +166,66 @@ function addParsedNodes(json) {
             case 'Tab': {
                 event.preventDefault();
 
-                currentIText = new fabric.IText('a', {
+                FlowPipe.currentIText = new fabric.IText('a', {
                     backgroundColor: '#fff',
                     fontSize: 16,
-                    fontFamily: MAIN_FONT_NAME,
+                    fontFamily: FlowPipe.MAIN_FONT_NAME,
                     opacity: 0.9
                 });
-                canvas.add(currentIText);
-                currentIText.center();
-                currentIText.selectAll();
-                currentIText.enterEditing();
+                canvas.add(FlowPipe.currentIText);
+                FlowPipe.currentIText.center();
+                FlowPipe.currentIText.selectAll();
+                FlowPipe.currentIText.enterEditing();
                 console.log('entering edit');
                 break;
             }
 
             case 'Enter': {
 
-                if (currentIText){
+                // If the user was typing a node
+                if (FlowPipe.currentIText) {
 
                     console.log('exiting edit');
-                    let enteredName = currentIText.text;
+                    let enteredName = FlowPipe.currentIText.text;
                     console.log(`node name: ${enteredName}`)
 
-                    let matchingNode = availableNodes[enteredName];
-                    currentIText.exitEditing();
+                    let matchingNode = FlowPipe.availableNodes[enteredName];
+                    FlowPipe.currentIText.exitEditing();
 
                     // Add the node
-                    if (matchingNode){
-                        let newNode = new FlowPipeNode(enteredName, {
+                    if (matchingNode) {
+                        let newNode = new FlowPipe.Node(enteredName, {
                             inputs: matchingNode.inputs,
                             outputs: matchingNode.outputs,
                         });
-                        canvas.add(newNode);
                         newNode.center();
                     }
-                    canvas.remove(currentIText);
-                    currentIText = null;
+                    canvas.remove(FlowPipe.currentIText);
+                    canvas.renderAll();
+                    FlowPipe.currentIText = null;
                 }
+
+                // If the user is plugging an output
+                else if (FlowPipe.currentLine) {
+
+                    // Plug the line
+                    if (FlowPipe.canPlugLine && FlowPipe.currentInputPlugCoords) {
+
+                        FlowPipe.currentLine.endPlug.lines.push(FlowPipe.currentLine);
+                        canvas.renderAll();
+
+                        FlowPipe.currentLine = null;
+                        FlowPipe.canPlugLine = false;
+                    }
+                    // Delete the line
+                    else {
+                        canvas.remove(FlowPipe.currentLine);
+                        canvas.renderAll();
+                        FlowPipe.currentLine = null;
+                    }
+                }
+
+
                 break;
             }
 
@@ -155,13 +254,29 @@ function addParsedNodes(json) {
 
                 // If we are not in edit mode,
                 // we want to override the default behaviour of tab
-                if (!currentIText){
+                if (!FlowPipe.currentIText) {
                     event.preventDefault();
                 }
 
                 canvas.getActiveObjects().forEach(element => {
-                    canvas.remove(element);
+
+                    console.log(`delete ${element}`);
+
+                    element.inputPlugs.forEach(plug => {
+                        plug.lines.forEach(line => {
+                            canvas.remove(line);
+                        });
+                    });
+
+                    element.outputPlugs.forEach(plug => {
+                        plug.lines.forEach(line => {
+                            canvas.remove(line);
+                        });
+                    });
+                    FlowPipe.nodeGraph.removeNode(element);
+
                 });
+                canvas.renderAll();
                 break;
             };
         }

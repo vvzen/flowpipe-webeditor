@@ -4,17 +4,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FabricJS - 1</title>
+    <title>FlowPipe - WebEditor</title>
 </head>
 
 <body>
-    <div id="container">
-        <div>Press Tab, type the name of a node and the press enter to create it</div>
-        <div>Currently available nodes: <span id="current-avail-nodes"></span></div>
-        <div>Press Backspace to delete a node</div>
+    <div class="ml-3 mt-2">
 
+        <h2>FlowPipe WebEditor demo</h2>
+        <footer class="blockquote-footer">v0.0.1</footer>
+
+        <div class="mt-4">
+            <h4>Currently available nodes:</h4>
+            <ul id="current-avail-nodes"></ul>
+
+            <h4>Available functionality</h4>
+            <ul>
+                <li>Press Tab, type the name of a node and the press Enter to create it</li>
+                <li>Press Backspace to delete a node</li>
+                <li>Drag the output plug of a node into the input plug, then press Enter to create a connection</li>
+            </ul>
+        </div>
+    </div>
+    </ul>
+    </div>
+
+    </div>
+
+    <div id="container">
         <canvas id="c"></canvas>
     </div>
+
+    <link rel="stylesheet" href="src/css/bootstrap.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css?family=Inconsolata&display=swap');
     </style>
@@ -22,8 +42,9 @@
 
     <script src="src/libs/fontfaceobserver.standalone.js"></script>
     <script src="src/libs/fabric.min.js"></script>
-    <script src="src/node.js"></script>
     <script src="src/editor.js"></script>
+    <script src="src/node-graph.js"></script>
+    <script src="src/nodes.js"></script>
 
 </body>
 
