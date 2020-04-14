@@ -41,14 +41,14 @@ FlowPipe.inconsolataFont = new FontFaceObserver(FlowPipe.MAIN_FONT_NAME);
 FlowPipe.inconsolataFont.load()
     .then(() => {
         console.log(`${FlowPipe.MAIN_FONT_NAME} font loaded`)
-    }).catch(function(e) {
+    }).catch(function (e) {
         console.error(`font loading failed ${e}`);
     });
 
 // ------------------------------------
 // Event Callbacks
 // ------------------------------------
-canvas.on('mouse:wheel', function(opt) {
+canvas.on('mouse:wheel', function (opt) {
     var delta = opt.e.deltaY;
     var zoom = canvas.getZoom();
 
@@ -67,7 +67,7 @@ canvas.on('mouse:wheel', function(opt) {
 
 });
 
-canvas.on('mouse:move', function(event) {
+canvas.on('mouse:move', function (event) {
     if (!FlowPipe.currentLine) {
         return;
     }
@@ -86,7 +86,7 @@ canvas.on('mouse:move', function(event) {
     canvas.renderAll();
 });
 
-canvas.on('object:moving', function(e) {
+canvas.on('object:moving', function (e) {
     let node = e.target;
 
     let nodesToVisit = [];
@@ -154,8 +154,8 @@ function addParsedNodes(json) {
         FlowPipe.availableNodes[node] = json[node];
     });
     // Update the UI
-    let nodesAvailableEl = document.getElementById("current-avail-nodes");
-    nodesAvailableEl.textContent = Object.keys(FlowPipe.availableNodes).join(", ");
+    let availableNodesDiv = document.getElementById('current-avail-nodes');
+    availableNodesDiv.innerHTML = `<em>${Object.keys(FlowPipe.availableNodes).join(', ')}</em>`;
 
     document.addEventListener('keydown', (event) => {
         console.log(event.code);

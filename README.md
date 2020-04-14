@@ -9,3 +9,25 @@ If you have nodejs installed, you can do
 If you have python installed, you can do
 
 ```python -m SimpleHTTPServer 8080```
+
+
+## Current functionality
+
+1. Parsing the `example_nodes.json` to get a list of nodes
+2. Create node by name using tab
+3. Select & Move nodes around
+4. Connect nodes
+
+## Know Issues
+
+1. Selecting multiple nodes and moving them breaks the connection
+
+## Next steps
+
+1. Fix issues
+2. Refactor code
+3. Decide the next milestone?
+
+## Nice to have
+
+1. Autocompletion when creating a node
